@@ -1,0 +1,14 @@
+<plugin name='true-license-plugin' version='1.0' grailsVersion='2.4 &gt; *'>
+  <author>Nick Blanchard</author>
+  <authorEmail>blanchard.nick@gmail.com</authorEmail>
+  <title>This plugin provides license management to Grails application.</title>
+  <description>     This plugin utilizes TrueLicense Library Collection(TLC) to securely create, install and verify license
+     for closed source products.  
+    </description>
+  <documentation>http://grails.org/plugin/true-license-plugin</documentation>
+  <type>TrueLicensePluginGrailsPlugin</type>
+  <resources>
+    <resource>LicenseController</resource>
+    <resource>LicenseService</resource>
+  </resources>
+</plugin>
