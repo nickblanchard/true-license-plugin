@@ -3,84 +3,70 @@ import java.util.prefs.Preferences
 import de.schlichtherle.license.DefaultCipherParam
 import de.schlichtherle.license.DefaultLicenseParam
 import de.schlichtherle.license.KeyStoreParam
+import de.schlichtherle.license.LicenseContent
 import de.schlichtherle.license.LicenseManager
 
 /**
- * License Service
- *
  * @author Nick Blanchard
  */
 class LicenseService {
 
-    boolean transactional = true
-    
-	def licenseConfig
-	
+	static transactional = false
+
+	private licenseConfig
+
 	// verify and retrieve current license
-    def getLicense() {
-    	def lc 
-    	try {
-    	  LicenseManager lm = new LicenseManager(getLicenseParam())
-          lc = lm.verify()
-    	} catch (Exception e) {
-    	  log.error "License could not be verified" + e
-    	}
-        return lc
-    }
-    
-    // install new license
-    def installLicense(file) {
-    	def lc
-    	try {
-    	  LicenseManager lm = new LicenseManager(getLicenseParam())
-    	  lm.install(file)
-    	  lc = lm.verify()	
-    	} catch (Exception e) {
-    		log.error "License could not be installed" + e
-    	}
-    	return lc
-    }
-    
-    // initiate config
-    private initLicenseConfig() {
-       if(!licenseConfig) {
-          ClassLoader parent = getClass().getClassLoader()
-          GroovyClassLoader loader = new GroovyClassLoader(parent)
-          def ac = loader.loadClass("LicensePublicConfig")
-          licenseConfig = new ConfigSlurper().parse(ac)
-       }
-    }
-    
-    // get license param
-    private getLicenseParam() {
-    	initLicenseConfig()
-    	def cipherParam = new DefaultCipherParam(licenseConfig.license.cipherPassword) 
-    	def peferences = Preferences.systemNodeForPackage(getClass())
-    	def publicKeyPath = licenseConfig.license.publicKeyFile
-//    	def publicKeyStoreParam = new DefaultKeyStoreParam(getClass(), publicKeyPath, licenseConfig.license.publicKeyAlias, licenseConfig.license.storePassword, null)
+	LicenseContent getLicense() {
+		try {
+			return new LicenseManager(getLicenseParam()).verify()
+		} catch (e) {
+			log.error "License could not be verified", e
+		}
+	}
+
+	// install new license
+	LicenseContent installLicense(File file) {
+		try {
+			LicenseManager lm = new LicenseManager(getLicenseParam())
+			lm.install(file)
+			return lm.verify()
+		} catch (e) {
+			log.error "License could not be installed", e
+		}
+	}
+
+	// initiate config
+	private initLicenseConfig() {
+		if(!licenseConfig) {
+			GroovyClassLoader loader = new GroovyClassLoader(getClass().getClassLoader())
+			licenseConfig = new ConfigSlurper().parse(loader.loadClass("LicensePublicConfig"))
+		}
+	}
+
+	// get license param
+	private getLicenseParam() {
+		initLicenseConfig()
+		def cipherParam = new DefaultCipherParam(licenseConfig.license.cipherPassword)
+		def preferences = Preferences.systemNodeForPackage(getClass())
+		def publicKeyPath = licenseConfig.license.publicKeyFile
 		def publicKeyStoreParam = new KeyStoreParam() {
-			public InputStream getStream() throws IOException {
-				final String resourceName = publicKeyPath;
-				final InputStream instream = getClass().getResourceAsStream(publicKeyPath);
-				if (instream == null) {
-					println "Could not load file: " + resourceName;
-					throw new FileNotFoundException(resourceName);
+			InputStream getStream() throws IOException {
+				final String resourceName = publicKeyPath
+				final InputStream instream = getClass().getResourceAsStream(publicKeyPath)
+				if (!instream) {
+					log.error "Could not load file: $resourceName"
+					throw new FileNotFoundException(resourceName)
 				}
-				return instream;
+				instream
 			}
-			public String getAlias() {
-				return licenseConfig.license.publicKeyAlias;
+			String getAlias() {
+				licenseConfig.license.publicKeyAlias
 			}
-			public String getStorePwd() {
-				return licenseConfig.license.storePassword;
+			String getStorePwd() {
+				licenseConfig.license.storePassword
 			}
-			public String getKeyPwd() {
-				return null;
-			}
-		};
-    	def licenseParam = new DefaultLicenseParam(licenseConfig.license.subject, peferences, publicKeyStoreParam, cipherParam)
-    	
-    	return licenseParam
-    }
-    
+			String getKeyPwd() {}
+		}
+		new DefaultLicenseParam(licenseConfig.license.subject, preferences, publicKeyStoreParam, cipherParam)
+	}
 }
