@@ -1,28 +1,22 @@
-import java.io.File
-
 /**
- * License controller
- *
  * @author Nick Blanchard
  */
 class LicenseController {
-	
+
 	def licenseService
-	
+
 	// verify and display current license
-    def index = { 
-		def license = licenseService.getLicense() 
-		[ license:license ]	
+    def index() {
+		[license: licenseService.getLicense()]
 	}
-	
+
 	// install new license
-	def install = {
+	def install() {
 		def licenseFile = request.getFile("licenseFile")
 		File file = new File('a_file')
 		licenseFile.transferTo(file)
-		licenseService.installLicense(file)	
+		licenseService.installLicense(file)
 		file.delete()
-		redirect(action:index)
+		redirect(action: 'index')
 	}
-	
 }
