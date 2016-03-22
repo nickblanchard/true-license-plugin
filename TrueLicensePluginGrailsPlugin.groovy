@@ -17,7 +17,7 @@
   * @author Nick Blanchard
   */
 class TrueLicensePluginGrailsPlugin {
-    def version = "1.0"
+    def version = "1.1"
     def grailsVersion = "2.4 > *"
     def author = "Nick Blanchard"
     def authorEmail = "blanchard.nick@gmail.com"

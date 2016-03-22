@@ -1,10 +1,15 @@
+package grails.plugin.license
+
 import java.util.prefs.Preferences
+import java.io.FileInputStream
+import java.io.File
 
 import de.schlichtherle.license.DefaultCipherParam
 import de.schlichtherle.license.DefaultLicenseParam
 import de.schlichtherle.license.KeyStoreParam
 import de.schlichtherle.license.LicenseContent
 import de.schlichtherle.license.LicenseManager
+import grails.plugin.license.prefs.FilePreferencesFactory
 
 /**
  * @author Nick Blanchard
@@ -14,9 +19,15 @@ class LicenseService {
 	static transactional = false
 
 	private licenseConfig
+	
+	private licenseContent
 
 	// verify and retrieve current license
 	LicenseContent getLicense() {
+		if(licenseContent != null){
+			return licenseContent
+		}
+		
 		try {
 			return new LicenseManager(getLicenseParam()).verify()
 		} catch (e) {
@@ -28,11 +39,11 @@ class LicenseService {
 	LicenseContent installLicense(File file) {
 		try {
 			LicenseManager lm = new LicenseManager(getLicenseParam())
-			lm.install(file)
-			return lm.verify()
+			licenseContent = lm.install(file)
 		} catch (e) {
 			log.error "License could not be installed", e
 		}
+		return licenseContent
 	}
 
 	// initiate config
@@ -47,12 +58,16 @@ class LicenseService {
 	private getLicenseParam() {
 		initLicenseConfig()
 		def cipherParam = new DefaultCipherParam(licenseConfig.license.cipherPassword)
-		def preferences = Preferences.systemNodeForPackage(getClass())
+		System.setProperty("java.util.prefs.PreferencesFactory", FilePreferencesFactory.class.getName());
+		System.setProperty(FilePreferencesFactory.SYSTEM_PROPERTY_FILE, "myprefs.txt");
+	 
+		Preferences p = Preferences.userNodeForPackage(this.class);
 		def publicKeyPath = licenseConfig.license.publicKeyFile
 		def publicKeyStoreParam = new KeyStoreParam() {
 			InputStream getStream() throws IOException {
 				final String resourceName = publicKeyPath
-				final InputStream instream = getClass().getResourceAsStream(publicKeyPath)
+				File publicKeyFile = new File(publicKeyPath)
+				final InputStream instream = new FileInputStream(publicKeyFile)
 				if (!instream) {
 					log.error "Could not load file: $resourceName"
 					throw new FileNotFoundException(resourceName)
@@ -67,6 +82,6 @@ class LicenseService {
 			}
 			String getKeyPwd() {}
 		}
-		new DefaultLicenseParam(licenseConfig.license.subject, preferences, publicKeyStoreParam, cipherParam)
+		new DefaultLicenseParam(licenseConfig.license.subject, p, publicKeyStoreParam, cipherParam)
 	}
 }
