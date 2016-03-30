@@ -66,8 +66,7 @@ class LicenseService {
 		def publicKeyStoreParam = new KeyStoreParam() {
 			InputStream getStream() throws IOException {
 				final String resourceName = publicKeyPath
-				File publicKeyFile = new File(publicKeyPath)
-				final InputStream instream = new FileInputStream(publicKeyFile)
+				final InputStream instream = this.class.classLoader.getResourceAsStream(resourceName)
 				if (!instream) {
 					log.error "Could not load file: $resourceName"
 					throw new FileNotFoundException(resourceName)
