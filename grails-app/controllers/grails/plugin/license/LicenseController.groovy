@@ -1,3 +1,4 @@
+package grails.plugin.license
 /**
  * @author Nick Blanchard
  */
