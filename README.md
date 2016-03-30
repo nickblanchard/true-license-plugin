@@ -13,7 +13,7 @@ Add the following to your `grails-app/conf/BuildConfig`
 …
 plugins {
 …
-    compile ':true-license-plugin:1.0'
+    compile ':true-license-plugin:1.1'
 …
 }
 ```
@@ -37,8 +37,8 @@ grails run-app
 * /conf/publicCerts.store - public key file. This is included in WAR
 * /conf/LicensePublicConfig.groovy - holds all necessary information required for the client. Included in WAR
 * /conf/LicenseFilter - defines which controllers, actions need to be protected.
-* /plugins/true-license-plugin-1.0/controller/LicenseController - Install, verify license
-* /plugins/true-license-plugin-1.0/services/LicenseService - Install, verify license
+* /plugins/true-license-plugin-1.1/controller/LicenseController - Install, verify license
+* /plugins/true-license-plugin-1.1/services/LicenseService - Install, verify license
 
 ## Tips
 
