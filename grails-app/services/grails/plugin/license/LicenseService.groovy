@@ -61,7 +61,8 @@ class LicenseService {
 		System.setProperty("java.util.prefs.PreferencesFactory", FilePreferencesFactory.class.getName());
 		System.setProperty(FilePreferencesFactory.SYSTEM_PROPERTY_FILE, "myprefs.txt");
 	 
-		Preferences p = Preferences.userNodeForPackage(this.class);
+		Preferences p = Preferences.userRoot().node("com/nuance")
+//		Preferences p = Preferences.userNodeForPackage(this.class);
 		def publicKeyPath = licenseConfig.license.publicKeyFile
 		def publicKeyStoreParam = new KeyStoreParam() {
 			InputStream getStream() throws IOException {
